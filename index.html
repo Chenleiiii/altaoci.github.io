@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AOLO产品选型系统</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --light-gray: #f5f7fa;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #7f8c8d;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-gray);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .unit-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .unit-toggle button {
+            padding: 8px 16px;
+            border: 1px solid var(--primary-color);
+            background-color: white;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .unit-toggle button:first-child {
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .unit-toggle button:last-child {
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .unit-toggle button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-with-unit input {
+            flex: 1;
+            width: 100%;
+            min-width: 0; /* 确保输入框可以收缩 */
+        }
+        
+        .unit-label {
+            margin-left: 8px;
+            color: var(--dark-gray);
+            min-width: 50px;
+            font-size: 0.9rem;
+            flex-shrink: 0; /* 防止单位标签收缩 */
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .input-row .form-group {
+            flex: 1;
+            min-width: 140px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 确保所有输入框大小一致 */
+        .input-row .form-group input {
+            flex-grow: 1;
+            min-height: 42px; /* 统一最小高度 */
+        }
+        
+        .result-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .result-section h2 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .recommendation {
+            background-color: #e8f4fc;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-weight: 500;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+        }
+        
+        .model-calculation {
+            margin-top: 15px;
+        }
+        
+        .model-calculation h3 {
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+        
+        .model-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .model-item {
+            background-color: white;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px; /* 统一模型卡片高度 */
+        }
+        
+        .model-item.recommended {
+            border-color: var(--primary-color);
+            background-color: #e8f4fc;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .model-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        
+        .model-range {
+            color: var(--dark-gray);
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        
+        .model-quantity {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 6px;
+        }
+        
+        .model-load {
+            font-size: 0.85rem;
+            margin-top: 6px;
+            padding: 4px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        
+        .load-bar {
+            height: 6px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+        
+        .load-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+            transition: width 0.5s;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 12px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+        
+        .explanation h3 {
+            color: var(--secondary-color);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .explanation ul {
+            padding-left: 18px;
+        }
+        
+        .explanation li {
+            margin-bottom: 4px;
+        }
+        
+        @media (max-width: 480px) {
+            .input-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .model-list {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            /* 在手机上确保输入框宽度一致 */
+            .input-row .form-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>青岛澳龙产品选型系统</h1>
+        
+        <div class="unit-toggle">
+            <button id="unit-hour" class="active">立方米/小时</button>
+            <button id="unit-day">立方米/天</button>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-row">
+                <div class="form-group">
+                    <label for="inflow">1. 系统总进水流量</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="inflow" min="0" step="0.1" placeholder="进水流量">
+                        <span class="unit-label" id="inflow-unit">m³/h</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="outflow">2. 系统总产水流量</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="outflow" min="0" step="0.1" placeholder="产水流量">
+                        <span class="unit-label" id="outflow-unit">m³/h</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-row">
+                <div class="form-group">
+                    <label for="efficiency">3. 系统总产水率 (%)</label>
+                    <input type="number" id="efficiency" min="0" max="100" step="0.1" placeholder="总产水率">
+                </div>
+                
+                <div class="form-group">
+                    <label for="concentrate">4. 系统总浓水流量</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="concentrate" min="0" step="0.1" placeholder="浓水流量">
+                        <span class="unit-label" id="concentrate-unit">m³/h</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <h2>计算结果</h2>
+            <div class="recommendation" id="recommendation-text">
+                请输入系统参数以获取产品推荐
+            </div>
+            
+            <div class="model-calculation">
+                <h3>5. 产品型号介绍与需求计算</h3>
+                <div class="model-list" id="model-calculation-list">
+                    <!-- 各型号计算结果将在这里显示 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h3>系统说明</h3>
+            <ul>
+                <li>系统总进水流量 = 系统总产水流量 + 系统总浓水流量</li>
+                <li>系统总产水流量 = 系统总进水流量 × 系统总产水率 / 100</li>
+                <li>产品型号命名规则：后面的数字代表产品支持的浓水流量范围，如AL9-16表示该产品支持的浓水流量范围为9-16立方米每小时</li>
+                <li>系统会根据浓水流量自动计算所需产品数量，并推荐数量最少且不为0的型号</li>
+                <li>当多个型号的最少数量相同时，推荐流量范围最大的型号</li>
+                <li>单位切换：系统会自动在立方米每小时和立方米每天之间转换</li>
+                <li>负荷计算：(实际流量 - 最小流量) / (最大流量 - 最小流量) × 100%，表示设备在其工作范围内的使用程度</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 产品型号数据
+        const models = [
+            { name: "AL9-16", min: 9, max: 16 },
+            { name: "AL23-40", min: 23, max: 40 },
+            { name: "AL32-49", min: 32, max: 49 },
+            { name: "AL41-59", min: 41, max: 59 },
+            { name: "AL45-68", min: 45, max: 68 }
+        ];
+
+        // 获取DOM元素
+        const inflowInput = document.getElementById('inflow');
+        const outflowInput = document.getElementById('outflow');
+        const efficiencyInput = document.getElementById('efficiency');
+        const concentrateInput = document.getElementById('concentrate');
+        const recommendationText = document.getElementById('recommendation-text');
+        const modelCalculationList = document.getElementById('model-calculation-list');
+        
+        // 单位相关元素
+        const unitHourBtn = document.getElementById('unit-hour');
+        const unitDayBtn = document.getElementById('unit-day');
+        const inflowUnit = document.getElementById('inflow-unit');
+        const outflowUnit = document.getElementById('outflow-unit');
+        const concentrateUnit = document.getElementById('concentrate-unit');
+        
+        // 当前单位状态
+        let currentUnit = 'hour'; // 'hour' 或 'day'
+        
+        // 添加输入事件监听器
+        [inflowInput, outflowInput, efficiencyInput, concentrateInput].forEach(input => {
+            input.addEventListener('input', handleInputChange);
+            input.addEventListener('blur', handleInputBlur);
+        });
+
+        // 当前输入焦点
+        let focusedInput = null;
+
+        // 处理输入变化
+        function handleInputChange(event) {
+            focusedInput = event.target;
+        }
+
+        // 处理输入框失去焦点
+        function handleInputBlur() {
+            focusedInput = null;
+            calculateValues();
+        }
+        
+        // 单位切换处理
+        unitHourBtn.addEventListener('click', function() {
+            if (currentUnit !== 'hour') {
+                switchUnit('hour');
+            }
+        });
+        
+        unitDayBtn.addEventListener('click', function() {
+            if (currentUnit !== 'day') {
+                switchUnit('day');
+            }
+        });
+        
+        // 切换单位
+        function switchUnit(targetUnit) {
+            // 转换所有流量值
+            const conversionFactor = targetUnit === 'hour' ? 1/24 : 24;
+            
+            // 获取当前值
+            const inflow = parseFloat(inflowInput.value);
+            const outflow = parseFloat(outflowInput.value);
+            const concentrate = parseFloat(concentrateInput.value);
+            
+            // 转换并更新值
+            if (!isNaN(inflow)) inflowInput.value = (inflow * conversionFactor).toFixed(2);
+            if (!isNaN(outflow)) outflowInput.value = (outflow * conversionFactor).toFixed(2);
+            if (!isNaN(concentrate)) concentrateInput.value = (concentrate * conversionFactor).toFixed(2);
+            
+            // 更新单位标签
+            const unitText = targetUnit === 'hour' ? 'm³/h' : 'm³/d';
+            inflowUnit.textContent = unitText;
+            outflowUnit.textContent = unitText;
+            concentrateUnit.textContent = unitText;
+            
+            // 更新按钮状态
+            if (targetUnit === 'hour') {
+                unitHourBtn.classList.add('active');
+                unitDayBtn.classList.remove('active');
+            } else {
+                unitHourBtn.classList.remove('active');
+                unitDayBtn.classList.add('active');
+            }
+            
+            currentUnit = targetUnit;
+            
+            // 重新计算
+            calculateValues();
+        }
+        
+        // 将值转换为标准单位（立方米每小时）
+        function convertToStandard(value) {
+            if (currentUnit === 'hour') {
+                return value;
+            } else {
+                return value / 24;
+            }
+        }
+        
+        // 将值从标准单位转换为当前单位
+        function convertFromStandard(value) {
+            if (currentUnit === 'hour') {
+                return value;
+            } else {
+                return value * 24;
+            }
+        }
+
+        // 计算值
+        function calculateValues() {
+            // 获取输入值并转换为标准单位
+            let inflow = parseFloat(inflowInput.value);
+            let outflow = parseFloat(outflowInput.value);
+            let efficiency = parseFloat(efficiencyInput.value);
+            let concentrate = parseFloat(concentrateInput.value);
+            
+            // 转换为标准单位（立方米每小时）
+            if (!isNaN(inflow)) inflow = convertToStandard(inflow);
+            if (!isNaN(outflow)) outflow = convertToStandard(outflow);
+            if (!isNaN(concentrate)) concentrate = convertToStandard(concentrate);
+            
+            // 统计有值的输入数量
+            const values = [inflow, outflow, efficiency, concentrate];
+            const filledValues = values.filter(val => !isNaN(val) && val !== '');
+            
+            // 如果四个值都有，清空其他三个
+            if (filledValues.length === 4) {
+                if (focusedInput !== inflowInput) inflowInput.value = '';
+                if (focusedInput !== outflowInput) outflowInput.value = '';
+                if (focusedInput !== efficiencyInput) efficiencyInput.value = '';
+                if (focusedInput !== concentrateInput) concentrateInput.value = '';
+                updateProductRecommendation(); // 清空后更新推荐
+                return;
+            }
+            
+            // 如果只有两个值有值，计算其他两个
+            if (filledValues.length === 2) {
+                // 根据已知的两个值计算其他值
+                if (!isNaN(inflow) && !isNaN(outflow)) {
+                    // 已知进水和产水
+                    const newConcentrate = inflow - outflow;
+                    const newEfficiency = inflow > 0 ? (outflow / inflow * 100) : 0;
+                    
+                    concentrateInput.value = convertFromStandard(newConcentrate).toFixed(2);
+                    efficiencyInput.value = newEfficiency.toFixed(2);
+                } else if (!isNaN(inflow) && !isNaN(efficiency)) {
+                    // 已知进水和产水率
+                    const newOutflow = inflow * efficiency / 100;
+                    const newConcentrate = inflow - newOutflow;
+                    
+                    outflowInput.value = convertFromStandard(newOutflow).toFixed(2);
+                    concentrateInput.value = convertFromStandard(newConcentrate).toFixed(2);
+                } else if (!isNaN(inflow) && !isNaN(concentrate)) {
+                    // 已知进水和浓水
+                    const newOutflow = inflow - concentrate;
+                    const newEfficiency = inflow > 0 ? (newOutflow / inflow * 100) : 0;
+                    
+                    outflowInput.value = convertFromStandard(newOutflow).toFixed(2);
+                    efficiencyInput.value = newEfficiency.toFixed(2);
+                } else if (!isNaN(outflow) && !isNaN(efficiency)) {
+                    // 已知产水和产水率
+                    const newInflow = efficiency > 0 ? (outflow / (efficiency / 100)) : 0;
+                    const newConcentrate = newInflow - outflow;
+                    
+                    inflowInput.value = convertFromStandard(newInflow).toFixed(2);
+                    concentrateInput.value = convertFromStandard(newConcentrate).toFixed(2);
+                } else if (!isNaN(outflow) && !isNaN(concentrate)) {
+                    // 已知产水和浓水
+                    const newInflow = outflow + concentrate;
+                    const newEfficiency = newInflow > 0 ? (outflow / newInflow * 100) : 0;
+                    
+                    inflowInput.value = convertFromStandard(newInflow).toFixed(2);
+                    efficiencyInput.value = newEfficiency.toFixed(2);
+                } else if (!isNaN(efficiency) && !isNaN(concentrate)) {
+                    // 已知产水率和浓水
+                    if (efficiency < 100) {
+                        const newInflow = concentrate / (1 - efficiency / 100);
+                        const newOutflow = newInflow * efficiency / 100;
+                        
+                        inflowInput.value = convertFromStandard(newInflow).toFixed(2);
+                        outflowInput.value = convertFromStandard(newOutflow).toFixed(2);
+                    } else {
+                        inflowInput.value = '0';
+                        outflowInput.value = '0';
+                    }
+                }
+            }
+            
+            // 规则5：如果浓水流量有值，则更新产品推荐
+            if (!isNaN(parseFloat(concentrateInput.value))) {
+                updateProductRecommendation();
+            }
+        }
+
+        // 计算产品所需数量和负荷
+        function calculateModelQuantity(concentrateStandard, model) {
+            if (concentrateStandard < model.min) {
+                return { quantity: 0, load: 0 };
+            }
+            
+            // 计算所需的最小数量
+            let quantity = Math.ceil(concentrateStandard / model.max);
+            
+            // 检查是否满足条件
+            if (quantity * model.min <= concentrateStandard && concentrateStandard <= quantity * model.max) {
+                const actualLoadPerUnit = concentrateStandard / quantity;
+                // 修改负荷计算方式：(实际流量 - 最小流量) / (最大流量 - 最小流量) * 100%
+                const loadPercentage = ((actualLoadPerUnit - model.min) / (model.max - model.min)) * 100;
+                return { quantity: quantity, load: loadPercentage };
+            }
+            
+            // 如果初始数量不满足条件，尝试增加数量
+            while (quantity * model.min <= concentrateStandard) {
+                if (concentrateStandard <= quantity * model.max) {
+                    const actualLoadPerUnit = concentrateStandard / quantity;
+                    // 修改负荷计算方式：(实际流量 - 最小流量) / (最大流量 - 最小流量) * 100%
+                    const loadPercentage = ((actualLoadPerUnit - model.min) / (model.max - model.min)) * 100;
+                    return { quantity: quantity, load: loadPercentage };
+                }
+                quantity++;
+                
+                // 安全限制，防止无限循环
+                if (quantity > 100) {
+                    return { quantity: 0, load: 0 };
+                }
+            }
+            
+            // 如果找不到合适的数量，返回0
+            return { quantity: 0, load: 0 };
+        }
+
+        // 更新产品推荐
+        function updateProductRecommendation() {
+            const concentrate = parseFloat(concentrateInput.value);
+            
+            if (isNaN(concentrate) || concentrate <= 0) {
+                recommendationText.textContent = '请输入有效的浓水流量以获取产品推荐';
+                modelCalculationList.innerHTML = '';
+                return;
+            }
+            
+            // 转换为标准单位
+            const concentrateStandard = convertToStandard(concentrate);
+            
+            // 计算每个型号需要的数量和负荷
+            const modelQuantities = models.map(model => {
+                const result = calculateModelQuantity(concentrateStandard, model);
+                return {
+                    model: model.name,
+                    quantity: result.quantity,
+                    range: `${model.min}-${model.max} m³/h`,
+                    min: model.min,
+                    max: model.max,
+                    load: result.load
+                };
+            });
+            
+            // 过滤掉数量为0的型号
+            const validModels = modelQuantities.filter(item => item.quantity > 0);
+            
+            // 更新各型号计算结果
+            modelCalculationList.innerHTML = '';
+            modelQuantities.forEach(item => {
+                const modelItem = document.createElement('div');
+                modelItem.className = 'model-item';
+                
+                // 负荷显示逻辑
+                let loadDisplay = '';
+                if (item.quantity > 0) {
+                    loadDisplay = `
+                        <div class="model-load">
+                            负荷: ${item.load.toFixed(2)}%
+                            <div class="load-bar">
+                                <div class="load-fill" style="width: ${Math.min(item.load, 100)}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                modelItem.innerHTML = `
+                    <div class="model-name">${item.model}</div>
+                    <div class="model-range">${item.range}</div>
+                    <div class="model-quantity">${item.quantity}台</div>
+                    ${loadDisplay}
+                `;
+                modelCalculationList.appendChild(modelItem);
+            });
+            
+            if (validModels.length === 0) {
+                recommendationText.textContent = '没有找到合适的产品型号，请调整浓水流量参数';
+                return;
+            }
+            
+            // 找到数量最少的型号
+            let minQuantity = Math.min(...validModels.map(item => item.quantity));
+            let candidates = validModels.filter(item => item.quantity === minQuantity);
+            
+            // 如果有多个型号数量相同，选择流量范围最大的
+            let recommended = candidates[0];
+            if (candidates.length > 1) {
+                recommended = candidates.reduce((prev, current) => {
+                    return (prev.max > current.max) ? prev : current;
+                });
+            }
+            
+            // 更新推荐结果
+            recommendationText.textContent = `推荐使用 ${recommended.quantity} 台 ${recommended.model} 型号产品，单台负荷 ${recommended.load.toFixed(2)}%`;
+            
+            // 高亮显示推荐的产品
+            const modelItems = document.querySelectorAll('.model-item');
+            modelItems.forEach(item => {
+                if (item.textContent.includes(recommended.model)) {
+                    item.classList.add('recommended');
+                }
+            });
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            // 初始显示产品型号介绍
+            modelCalculationList.innerHTML = '';
+            models.forEach(model => {
+                const modelItem = document.createElement('div');
+                modelItem.className = 'model-item';
+                modelItem.innerHTML = `
+                    <div class="model-name">${model.name}</div>
+                    <div class="model-range">${model.min}-${model.max} m³/h</div>
+                    <div class="model-quantity">请输入浓水流量</div>
+                    <div class="model-load">负荷: -</div>
+                `;
+                modelCalculationList.appendChild(modelItem);
+            });
+        });
+    </script>
+</body>
+</html>
