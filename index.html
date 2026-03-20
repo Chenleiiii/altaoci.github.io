@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AOLO产品选型系统</title>
+    <title>青岛澳龙产品选型系统</title>
     <style>
         :root {
             --primary-color: #3498db;
@@ -99,7 +99,7 @@
         .input-with-unit input {
             flex: 1;
             width: 100%;
-            min-width: 0; /* 确保输入框可以收缩 */
+            min-width: 0;
         }
         
         .unit-label {
@@ -107,7 +107,7 @@
             color: var(--dark-gray);
             min-width: 50px;
             font-size: 0.9rem;
-            flex-shrink: 0; /* 防止单位标签收缩 */
+            flex-shrink: 0;
         }
         
         input {
@@ -117,6 +117,8 @@
             border-radius: 5px;
             font-size: 1rem;
             transition: border-color 0.3s;
+            height: 42px;
+            box-sizing: border-box;
         }
         
         input:focus {
@@ -138,10 +140,8 @@
             flex-direction: column;
         }
         
-        /* 确保所有输入框大小一致 */
         .input-row .form-group input {
             flex-grow: 1;
-            min-height: 42px; /* 统一最小高度 */
         }
         
         .result-section {
@@ -195,7 +195,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 140px; /* 统一模型卡片高度 */
+            min-height: 140px;
         }
         
         .model-item.recommended {
@@ -287,7 +287,6 @@
                 font-size: 1.3rem;
             }
             
-            /* 在手机上确保输入框宽度一致 */
             .input-row .form-group {
                 width: 100%;
             }
@@ -325,7 +324,7 @@
             <div class="input-row">
                 <div class="form-group">
                     <label for="efficiency">3. 系统总产水率 (%)</label>
-                    <input type="number" id="efficiency" min="0" max="100" step="0.1" placeholder="总产水率">
+                    <input type="number" id="efficiency" min="0" max="100" step="0.1" placeholder="产水率">
                 </div>
                 
                 <div class="form-group">
@@ -361,15 +360,19 @@
                 <li>系统会根据浓水流量自动计算所需产品数量，并推荐数量最少且不为0的型号</li>
                 <li>当多个型号的最少数量相同时，推荐流量范围最大的型号</li>
                 <li>单位切换：系统会自动在立方米每小时和立方米每天之间转换</li>
-                <li>负荷计算：(实际流量 - 最小流量) / (最大流量 - 最小流量) × 100%，表示设备在其工作范围内的使用程度</li>
+                <li>负荷计算：单台设备承载的实际流量除以支持的最大流量，以百分比显示</li>
             </ul>
         </div>
     </div>
 
     <script>
-        // 产品型号数据
+        // 产品型号数据 - 已更新为完整列表
         const models = [
+            { name: "AL5-7", min: 5, max: 7 },
+            { name: "AL7-10", min: 7, max: 10 },
             { name: "AL9-16", min: 9, max: 16 },
+            { name: "AL14-20", min: 14, max: 20 },
+            { name: "AL20-32", min: 20, max: 32 },
             { name: "AL23-40", min: 23, max: 40 },
             { name: "AL32-49", min: 32, max: 49 },
             { name: "AL41-59", min: 41, max: 59 },
@@ -394,6 +397,14 @@
         // 当前单位状态
         let currentUnit = 'hour'; // 'hour' 或 'day'
         
+        // 存储输入框的旧值，用于检测值是否改变
+        const oldValues = {
+            inflow: '',
+            outflow: '',
+            efficiency: '',
+            concentrate: ''
+        };
+        
         // 添加输入事件监听器
         [inflowInput, outflowInput, efficiencyInput, concentrateInput].forEach(input => {
             input.addEventListener('input', handleInputChange);
@@ -409,7 +420,19 @@
         }
 
         // 处理输入框失去焦点
-        function handleInputBlur() {
+        function handleInputBlur(event) {
+            const input = event.target;
+            const inputId = input.id;
+            const newValue = input.value;
+            
+            // 检查值是否改变
+            if (newValue === oldValues[inputId]) {
+                focusedInput = null;
+                return; // 值未改变，不进行计算
+            }
+            
+            // 更新旧值
+            oldValues[inputId] = newValue;
             focusedInput = null;
             calculateValues();
         }
@@ -579,8 +602,7 @@
             // 检查是否满足条件
             if (quantity * model.min <= concentrateStandard && concentrateStandard <= quantity * model.max) {
                 const actualLoadPerUnit = concentrateStandard / quantity;
-                // 修改负荷计算方式：(实际流量 - 最小流量) / (最大流量 - 最小流量) * 100%
-                const loadPercentage = ((actualLoadPerUnit - model.min) / (model.max - model.min)) * 100;
+                const loadPercentage = (actualLoadPerUnit / model.max) * 100;
                 return { quantity: quantity, load: loadPercentage };
             }
             
@@ -588,8 +610,7 @@
             while (quantity * model.min <= concentrateStandard) {
                 if (concentrateStandard <= quantity * model.max) {
                     const actualLoadPerUnit = concentrateStandard / quantity;
-                    // 修改负荷计算方式：(实际流量 - 最小流量) / (最大流量 - 最小流量) * 100%
-                    const loadPercentage = ((actualLoadPerUnit - model.min) / (model.max - model.min)) * 100;
+                    const loadPercentage = (actualLoadPerUnit / model.max) * 100;
                     return { quantity: quantity, load: loadPercentage };
                 }
                 quantity++;
@@ -611,6 +632,18 @@
             if (isNaN(concentrate) || concentrate <= 0) {
                 recommendationText.textContent = '请输入有效的浓水流量以获取产品推荐';
                 modelCalculationList.innerHTML = '';
+                // 重新显示型号介绍
+                models.forEach(model => {
+                    const modelItem = document.createElement('div');
+                    modelItem.className = 'model-item';
+                    modelItem.innerHTML = `
+                        <div class="model-name">${model.name}</div>
+                        <div class="model-range">${model.min}-${model.max} m³/h</div>
+                        <div class="model-quantity">请输入浓水流量</div>
+                        <div class="model-load">负荷: -</div>
+                    `;
+                    modelCalculationList.appendChild(modelItem);
+                });
                 return;
             }
             
@@ -650,6 +683,8 @@
                             </div>
                         </div>
                     `;
+                } else {
+                    loadDisplay = `<div class="model-load">负荷: -</div>`;
                 }
                 
                 modelItem.innerHTML = `
@@ -670,7 +705,7 @@
             let minQuantity = Math.min(...validModels.map(item => item.quantity));
             let candidates = validModels.filter(item => item.quantity === minQuantity);
             
-            // 如果有多个型号数量相同，选择流量范围最大的
+            // 如果有多个型号数量相同，选择流量范围最大的（max最大）
             let recommended = candidates[0];
             if (candidates.length > 1) {
                 recommended = candidates.reduce((prev, current) => {
